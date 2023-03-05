@@ -3,8 +3,10 @@
     namespace App\Http\Controllers;
 
     use App\Models\Chirp;
+    use Illuminate\Contracts\Foundation\Application;
     use Illuminate\Http\RedirectResponse;
     use Illuminate\Http\Request;
+    use Illuminate\Routing\Redirector;
     use Inertia\Inertia;
     use Inertia\Response;
 
@@ -61,16 +63,30 @@
         /**
          * Update the specified resource in storage.
          */
-        public function update(Request $request, Chirp $chirp)
-        {
-            //
+        public function update(
+            Request $request,
+            Chirp $chirp
+        ): \Illuminate\Foundation\Application|Redirector|RedirectResponse|Application {
+            $this->authorize('update', $chirp);
+
+            $validated = $request->validate([
+                'message' => 'required|string|max:255',
+            ]);
+
+            $chirp->update($validated);
+
+            return redirect(route('chirps.index'));
         }
 
         /**
          * Remove the specified resource from storage.
          */
-        public function destroy(Chirp $chirp)
+        public function destroy(Chirp $chirp): RedirectResponse
         {
-            //
+            $this->authorize('delete', $chirp);
+
+            $chirp->delete();
+
+            return redirect(route('chirps.index'));
         }
     }
